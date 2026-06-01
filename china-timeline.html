@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中国历史时间轴</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap');
+
+  :root {
+    --parchment: #f5f0e8;
+    --parchment-dark: #e8e0d0;
+    --ink: #2c2416;
+    --ink-light: #5c5240;
+    --accent: #8b4513;
+    --accent-gold: #c4a35a;
+    --timeline-line: #3c3428;
+    --card-bg: rgba(255, 252, 245, 0.92);
+    --card-border: rgba(139, 69, 19, 0.25);
+    --card-shadow: 0 2px 16px rgba(44, 36, 22, 0.08);
+    --card-hover-shadow: 0 6px 28px rgba(44, 36, 22, 0.16);
+    --dot-size: 10px;
+    --dot-hover-size: 16px;
+    --connector-width: 36px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Serif SC', 'Noto Sans SC', serif;
+    background-color: var(--parchment);
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(196, 163, 90, 0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 50%, rgba(139, 69, 19, 0.04) 0%, transparent 60%),
+      url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    color: var(--ink);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    user-select: none;
+  }
+
+  /* ── 标题 ── */
+  .title-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    padding: 28px 0 0;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .main-title {
+    display: inline-block;
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--ink);
+    position: relative;
+  }
+
+  .main-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+  }
+
+  .subtitle {
+    margin-top: 14px;
+    font-size: 0.85rem;
+    color: var(--ink-light);
+    letter-spacing: 0.2em;
+    font-weight: 300;
+  }
+
+  /* ── 时间轴容器 ── */
+  .timeline-stage {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+
+  .timeline-stage.macro-hidden {
+    opacity: 0;
+    transform: scale(0.96);
+    pointer-events: none;
+  }
+
+  /* ── 主轴 ── */
+  .macro-timeline {
+    position: relative;
+    width: 88vw;
+    max-width: 1200px;
+    height: 2px;
+    background: var(--timeline-line);
+    border-radius: 1px;
+  }
+
+  /* 主轴起点 / 终点装饰 */
+  .macro-timeline::before,
+  .macro-timeline::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    background: var(--accent-gold);
+    border-radius: 50%;
+  }
+  .macro-timeline::before { left: -4px; }
+  .macro-timeline::after  { right: -4px; }
+
+  /* ── 节点 ── */
+  .timeline-node {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    z-index: 2;
+  }
+
+  /* 圆点 */
+  .node-dot {
+    width: var(--dot-size);
+    height: var(--dot-size);
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--parchment);
+    box-shadow: 0 0 0 2px var(--accent-gold);
+    transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1.2);
+    position: relative;
+  }
+
+  .timeline-node:hover .node-dot {
+    width: var(--dot-hover-size);
+    height: var(--dot-hover-size);
+    background: var(--accent-gold);
+    box-shadow: 0 0 0 4px var(--accent-gold), 0 0 18px rgba(196, 163, 90, 0.5);
+  }
+
+  /* 连接线 */
+  .node-connector {
+    position: absolute;
+    top: 50%;
+    width: var(--connector-width);
+    height: 1.5px;
+    background: var(--ink-light);
+    opacity: 0.5;
+    transition: opacity 0.35s ease;
+  }
+  .timeline-node:hover .node-connector { opacity: 0.8; }
+
+  .connector-up   { right: calc(100% + 2px); }
+  .connector-down { left:   calc(100% + 2px); }
+
+  /* ── 卡片 ── */
+  .node-card {
+    position: absolute;
+    width: max-content;
+    max-width: 100px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 3px;
+    padding: 6px 10px;
+    box-shadow: var(--card-shadow);
+    transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1.2);
+    backdrop-filter: blur(4px);
+  }
+
+  /* 上方节点：卡片在轴上方，连接线向上 */
+  .timeline-node.card-up .node-card {
+    bottom: calc(var(--dot-hover-size) + 8px + var(--connector-width));
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .timeline-node.card-up .node-connector {
+    right: 50%;
+    top: auto;
+    bottom: calc(var(--dot-size) / 2 + 4px);
+    height: var(--connector-width);
+    width: 1.5px;
+    transform: translateX(50%);
+  }
+
+  /* 下方节点：卡片在轴下方，连接线向下 */
+  .timeline-node.card-down .node-card {
+    top: calc(var(--dot-hover-size) + 8px + var(--connector-width));
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .timeline-node.card-down .node-connector {
+    left: 50%;
+    top: calc(var(--dot-size) / 2 + 4px);
+    height: var(--connector-width);
+    width: 1.5px;
+    transform: translateX(-50%);
+  }
+
+  .timeline-node:hover .node-card {
+    box-shadow: var(--card-hover-shadow);
+    border-color: var(--accent-gold);
+    transform: translateX(-50%) scale(1.06);
+    background: rgba(255, 252, 245, 0.98);
+  }
+
+  .card-dynasty {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .card-era {
+    font-size: 0.6rem;
+    color: var(--ink-light);
+    margin-top: 2px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  /* ── 响应式微调 ── */
+  @media (max-width: 768px) {
+    .main-title { font-size: 1.35rem; }
+    .subtitle  { font-size: 0.65rem; }
+    .macro-timeline { width: 94vw; }
+    :root {
+      --connector-width: 28px;
+    }
+    .node-card { max-width: 72px; padding: 4px 7px; }
+    .card-dynasty { font-size: 0.66rem; }
+    .card-era    { font-size: 0.54rem; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- 标题 -->
+  <div class="title-area">
+    <h1 class="main-title">中国历史时间轴</h1>
+    <p class="subtitle">CHINESE HISTORY TIMELINE</p>
+  </div>
+
+  <!-- 主时间轴阶段 -->
+  <div id="macroStage" class="timeline-stage">
+    <div id="macroTimeline" class="macro-timeline"></div>
+  </div>
+
+  <!-- 次级时间轴占位 -->
+  <div id="microStage" class="timeline-stage macro-hidden">
+    <div id="microContent" class="w-full h-full flex items-center justify-center">
+      <p class="text-xl tracking-widest" style="color:var(--ink-light);">即将进入详细时间轴...</p>
+    </div>
+  </div>
+
+<script>
+// ──────────────────────────────────────────
+// 数据层
+// ──────────────────────────────────────────
+const dynastyData = [
+  { id: 'shennong',   name: '三皇五帝',   start: '约前3000', end: '约前2070', pos: 2  },
+  { id: 'xia',        name: '夏',         start: '约前2070', end: '约前1600', pos: 6  },
+  { id: 'shang',      name: '商',         start: '约前1600', end: '约前1046', pos: 10 },
+  { id: 'xizhou',     name: '西周',       start: '约前1046', end: '前771',    pos: 14 },
+  { id: 'dongzhou',   name: '东周',       start: '前770',    end: '前256',    pos: 18 },
+  { id: 'qin',        name: '秦',         start: '前221',    end: '前207',    pos: 22 },
+  { id: 'xihan',      name: '西汉',       start: '前202',    end: '公元9',    pos: 26 },
+  { id: 'xin',        name: '新朝',       start: '公元9',    end: '23',       pos: 30 },
+  { id: 'donghan',    name: '东汉',       start: '25',       end: '220',      pos: 34 },
+  { id: 'sanguo',     name: '三国',       start: '220',      end: '280',      pos: 39 },
+  { id: 'xijin',      name: '西晋',       start: '265',      end: '316',      pos: 43 },
+  { id: 'dongjin',    name: '东晋十六国', start: '317',      end: '420',      pos: 47 },
+  { id: 'nanbei',     name: '南北朝',     start: '420',      end: '589',      pos: 51 },
+  { id: 'sui',        name: '隋',         start: '581',      end: '618',      pos: 55 },
+  { id: 'tang',       name: '唐',         start: '618',      end: '907',      pos: 59 },
+  { id: 'wudai',      name: '五代十国',   start: '907',      end: '960',      pos: 64 },
+  { id: 'beisong',    name: '北宋',       start: '960',      end: '1127',     pos: 68 },
+  { id: 'nansong',    name: '南宋',       start: '1127',     end: '1279',     pos: 72 },
+  { id: 'yuan',       name: '元',         start: '1271',     end: '1368',     pos: 76 },
+  { id: 'ming',       name: '明',         start: '1368',     end: '1644',     pos: 80 },
+  { id: 'qing',       name: '清',         start: '1644',     end: '1912',     pos: 85 },
+  { id: 'minguo',     name: '中华民国',   start: '1912',     end: '1949',     pos: 90 },
+  { id: 'zhongguo',   name: '中华人民共和国', start: '1949', end: '至今',    pos: 95 },
+];
+
+// ──────────────────────────────────────────
+// 渲染层
+// ──────────────────────────────────────────
+const macroTimeline = document.getElementById('macroTimeline');
+
+dynastyData.forEach((dynasty, index) => {
+  // 交替排列：偶数 index 在上，奇数在下
+  const isUp = index % 2 === 0;
+  const cardClass = isUp ? 'card-up' : 'card-down';
+
+  const node = document.createElement('div');
+  node.className = `timeline-node ${cardClass}`;
+  node.style.left = `${dynasty.pos}%`;
+
+  // 卡片
+  const card = document.createElement('div');
+  card.className = 'node-card';
+  card.innerHTML = `
+    <div class="card-dynasty">${dynasty.name}</div>
+    <div class="card-era">${dynasty.start} — ${dynasty.end}</div>
+  `;
+
+  // 连线
+  const connector = document.createElement('div');
+  connector.className = 'node-connector';
+
+  // 圆点
+  const dot = document.createElement('div');
+  dot.className = 'node-dot';
+
+  node.appendChild(card);
+  node.appendChild(connector);
+  node.appendChild(dot);
+
+  // 点击事件
+  node.addEventListener('click', (e) => {
+    e.stopPropagation();
+    enterMicroTimeline(dynasty);
+  });
+
+  macroTimeline.appendChild(node);
+});
+
+// ──────────────────────────────────────────
+// 交互：进入次级时间轴
+// ──────────────────────────────────────────
+function enterMicroTimeline(dynasty) {
+  alert(`正在进入 ${dynasty.name} 详细时间轴`);
+
+  const macroStage = document.getElementById('macroStage');
+  const microStage = document.getElementById('microStage');
+  const microContent = document.getElementById('microContent');
+
+  // 更新次级标题
+  microContent.innerHTML = `
+    <div style="text-align:center;">
+      <p class="text-3xl font-bold tracking-widest mb-2" style="color:var(--accent);">${dynasty.name}</p>
+      <p class="text-lg tracking-wide" style="color:var(--ink-light);">${dynasty.start} — ${dynasty.end}</p>
+      <p class="text-sm mt-6 tracking-widest" style="color:var(--ink-light);">详细时间轴加载中...</p>
+    </div>
+  `;
+
+  // 平滑切换
+  macroStage.classList.add('macro-hidden');
+  microStage.classList.remove('macro-hidden');
+}
+
+// 点击空白区域返回主时间轴（演示用）
+document.getElementById('microStage').addEventListener('click', function(e) {
+  if (e.target === this || e.target.closest('#microContent p:last-child')) {
+    const macroStage = document.getElementById('macroStage');
+    const microStage = document.getElementById('microStage');
+    microStage.classList.add('macro-hidden');
+    macroStage.classList.remove('macro-hidden');
+  }
+});
+</script>
+
+</body>
+</html>
