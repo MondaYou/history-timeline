@@ -23,6 +23,7 @@
     --dot-size: 10px;
     --dot-hover-size: 16px;
     --connector-width: 36px;
+    --connector-width-far: 68px;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -51,6 +52,10 @@
     padding: 28px 0 0;
     text-align: center;
     pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+  body.micro-active .title-area {
+    opacity: 0;
   }
 
   .main-title {
@@ -128,6 +133,10 @@
     transform: translate(-50%, -50%);
     cursor: pointer;
     z-index: 2;
+    --card-offset: var(--connector-width);
+  }
+  .timeline-node.offset-far {
+    --card-offset: var(--connector-width-far);
   }
 
   /* 圆点 */
@@ -168,11 +177,10 @@
   .node-card {
     position: absolute;
     width: max-content;
-    max-width: 100px;
     background: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: 3px;
-    padding: 6px 10px;
+    padding: 6px 12px;
     box-shadow: var(--card-shadow);
     transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1.2);
     backdrop-filter: blur(4px);
@@ -180,7 +188,7 @@
 
   /* 上方节点：卡片在轴上方，连接线向上 */
   .timeline-node.card-up .node-card {
-    bottom: calc(var(--dot-hover-size) + 8px + var(--connector-width));
+    bottom: calc(var(--dot-hover-size) + 8px + var(--card-offset));
     left: 50%;
     transform: translateX(-50%);
   }
@@ -188,21 +196,21 @@
     right: 50%;
     top: auto;
     bottom: calc(var(--dot-size) / 2 + 4px);
-    height: var(--connector-width);
+    height: var(--card-offset);
     width: 1.5px;
     transform: translateX(50%);
   }
 
   /* 下方节点：卡片在轴下方，连接线向下 */
   .timeline-node.card-down .node-card {
-    top: calc(var(--dot-hover-size) + 8px + var(--connector-width));
+    top: calc(var(--dot-hover-size) + 8px + var(--card-offset));
     left: 50%;
     transform: translateX(-50%);
   }
   .timeline-node.card-down .node-connector {
     left: 50%;
     top: calc(var(--dot-size) / 2 + 4px);
-    height: var(--connector-width);
+    height: var(--card-offset);
     width: 1.5px;
     transform: translateX(-50%);
   }
@@ -231,6 +239,88 @@
     white-space: nowrap;
   }
 
+  /* ── 次级时间轴专属 ── */
+  .micro-stage-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .micro-header {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    z-index: 5;
+  }
+
+  .micro-header .dynasty-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+
+  .micro-header .dynasty-era {
+    font-size: 0.8rem;
+    color: var(--ink-light);
+    margin-top: 4px;
+    letter-spacing: 0.06em;
+  }
+
+  .back-btn {
+    position: absolute;
+    top: 24px;
+    left: 32px;
+    z-index: 10;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 3px;
+    padding: 8px 18px;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 0.85rem;
+    color: var(--ink);
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(4px);
+  }
+
+  .back-btn:hover {
+    border-color: var(--accent-gold);
+    color: var(--accent);
+    box-shadow: var(--card-hover-shadow);
+  }
+
+  .micro-timeline {
+    position: relative;
+    width: 80vw;
+    max-width: 1000px;
+    height: 2px;
+    background: var(--timeline-line);
+    border-radius: 1px;
+    opacity: 0.7;
+  }
+
+  .micro-timeline::before,
+  .micro-timeline::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    background: var(--accent-gold);
+    border-radius: 50%;
+  }
+  .micro-timeline::before { left: -3px; }
+  .micro-timeline::after  { right: -3px; }
+
   /* ── 响应式微调 ── */
   @media (max-width: 768px) {
     .main-title { font-size: 1.35rem; }
@@ -239,9 +329,11 @@
     :root {
       --connector-width: 28px;
     }
-    .node-card { max-width: 72px; padding: 4px 7px; }
+    .node-card { padding: 4px 8px; }
     .card-dynasty { font-size: 0.66rem; }
     .card-era    { font-size: 0.54rem; }
+    .micro-header .dynasty-title { font-size: 1.2rem; }
+    .back-btn { top: 12px; left: 12px; padding: 6px 14px; font-size: 0.75rem; }
   }
 </style>
 </head>
@@ -260,9 +352,7 @@
 
   <!-- 次级时间轴占位 -->
   <div id="microStage" class="timeline-stage macro-hidden">
-    <div id="microContent" class="w-full h-full flex items-center justify-center">
-      <p class="text-xl tracking-widest" style="color:var(--ink-light);">即将进入详细时间轴...</p>
-    </div>
+    <div id="microInner" class="micro-stage-inner"></div>
   </div>
 
 <script>
@@ -295,33 +385,200 @@ const dynastyData = [
   { id: 'zhongguo',   name: '中华人民共和国', start: '1949', end: '至今',    pos: 95 },
 ];
 
-// ──────────────────────────────────────────
-// 渲染层
-// ──────────────────────────────────────────
-const macroTimeline = document.getElementById('macroTimeline');
+// 次级时间轴数据（按朝代 ID 索引）
+const subTimelineData = {
+  shennong: [
+    { name: '燧人氏',   era: '约前3000', desc: '钻木取火·结绳记事' },
+    { name: '伏羲氏',   era: '',         desc: '创八卦·教渔猎' },
+    { name: '神农氏',   era: '',         desc: '尝百草·教农耕' },
+    { name: '黄帝',     era: '约前2700', desc: '统一华夏·制礼乐' },
+    { name: '颛顼',     era: '',         desc: '绝地天通·定历法' },
+    { name: '帝喾',     era: '',         desc: '顺天恤民·明鬼神' },
+    { name: '尧',       era: '约前2300', desc: '禅让之始·派羲和观天' },
+    { name: '舜',       era: '约前2200', desc: '孝感动天·命禹治水' },
+  ],
+  xia: [
+    { name: '禹',       era: '约前2070', desc: '治水功成·建夏' },
+    { name: '启',       era: '',         desc: '家天下·世袭始' },
+    { name: '太康失国', era: '',         desc: '后羿代夏' },
+    { name: '少康中兴', era: '',         desc: '复国·夏道复兴' },
+    { name: '桀',       era: '约前1600', desc: '暴虐亡国·商汤伐夏' },
+  ],
+  shang: [
+    { name: '商汤',     era: '约前1600', desc: '伐夏建商·作汤誓' },
+    { name: '盘庚',     era: '约前1300', desc: '迁都于殷·中兴商朝' },
+    { name: '武丁',     era: '约前1250', desc: '武丁盛世·妇好征伐' },
+    { name: '纣王',     era: '约前1075', desc: '暴虐失国·牧野之战' },
+  ],
+  xizhou: [
+    { name: '武王伐纣', era: '约前1046', desc: '牧野之战·周朝建立' },
+    { name: '周公摄政', era: '',         desc: '制礼作乐·分封诸侯' },
+    { name: '成康之治', era: '',         desc: '刑措不用·天下安宁' },
+    { name: '国人暴动', era: '前841',    desc: '厉王出奔·共和行政' },
+    { name: '宣王中兴', era: '前827',    desc: '北伐猃狁·南征荆蛮' },
+    { name: '幽王',     era: '前781',    desc: '烽火戏诸侯·犬戎灭周' },
+  ],
+  dongzhou: [
+    { name: '平王东迁', era: '前770',   desc: '定都洛邑·东周始' },
+    { name: '春秋五霸', era: '前770-前476', desc: '齐桓·晋文·楚庄·吴阖闾·越勾践' },
+    { name: '孔子',     era: '前551-前479', desc: '儒家始祖·周游列国' },
+    { name: '战国七雄', era: '前475-前221', desc: '齐楚燕韩赵魏秦·百家争鸣' },
+    { name: '秦灭周',   era: '前256',   desc: '周赧王献地·东周亡' },
+  ],
+  qin: [
+    { name: '秦始皇',   era: '前221',   desc: '统一六国·始称皇帝' },
+    { name: '废分封',   era: '',        desc: '行郡县·书同文·车同轨' },
+    { name: '焚书坑儒', era: '前213',   desc: '李斯献策·思想统制' },
+    { name: '始皇驾崩', era: '前210',   desc: '沙丘之变·赵高专权' },
+    { name: '陈胜起义', era: '前209',   desc: '大泽乡揭竿·天下响应' },
+    { name: '秦亡',     era: '前207',   desc: '刘邦入关·子婴献玺' },
+  ],
+  xihan: [
+    { name: '刘邦建汉', era: '前202',   desc: '楚汉争霸·定都长安' },
+    { name: '文景之治', era: '前180-前141', desc: '轻徭薄赋·与民休息' },
+    { name: '汉武帝',   era: '前141-前87',  desc: '独尊儒术·开疆拓土' },
+    { name: '张骞出使', era: '前138',   desc: '凿空西域·丝绸之路' },
+    { name: '昭宣中兴', era: '前87-前49',   desc: '吏治清明·匈奴来朝' },
+    { name: '王莽篡汉', era: '公元9',   desc: '外戚代汉·西汉亡' },
+  ],
+  xin: [
+    { name: '王莽称帝', era: '公元9',   desc: '代汉立新·托古改制' },
+    { name: '王田私属', era: '',        desc: '禁奴婢买卖·土地国有' },
+    { name: '绿林赤眉', era: '17',      desc: '饥民起义·天下大乱' },
+    { name: '新朝覆灭', era: '23',      desc: '义军入长安·王莽被杀' },
+  ],
+  donghan: [
+    { name: '光武中兴', era: '25',      desc: '刘秀称帝·定都洛阳' },
+    { name: '明章之治', era: '57-88',   desc: '吏治清明·佛法东传' },
+    { name: '蔡伦造纸', era: '105',     desc: '改进造纸术·文化传播' },
+    { name: '张衡地动仪', era: '132',   desc: '候风地动仪·科技巅峰' },
+    { name: '黄巾起义', era: '184',     desc: '张角太平道·天下大乱' },
+    { name: '汉室衰亡', era: '220',     desc: '曹丕篡汉·献帝禅让' },
+  ],
+  sanguo: [
+    { name: '官渡之战', era: '200',     desc: '曹操破袁绍·统一北方' },
+    { name: '赤壁之战', era: '208',     desc: '孙刘联兵·天下三分' },
+    { name: '三国鼎立', era: '220-222', desc: '曹魏·蜀汉·孙吴' },
+    { name: '诸葛亮北伐', era: '228-234', desc: '六出祁山·鞠躬尽瘁' },
+    { name: '司马篡魏', era: '265',     desc: '司马炎代魏·晋朝始' },
+    { name: '吴亡·三分归晋', era: '280', desc: '王濬楼船下益州' },
+  ],
+  xijin: [
+    { name: '太康盛世', era: '280',     desc: '统一全国·短暂繁荣' },
+    { name: '八王之乱', era: '291-306', desc: '宗室相残·国力耗尽' },
+    { name: '永嘉之乱', era: '311',     desc: '匈奴攻陷洛阳·怀帝被俘' },
+    { name: '西晋灭亡', era: '316',     desc: '愍帝出降·衣冠南渡' },
+  ],
+  dongjin: [
+    { name: '司马睿建东晋', era: '317', desc: '定都建康·偏安江南' },
+    { name: '淝水之战', era: '383',     desc: '谢安破苻坚·草木皆兵' },
+    { name: '五胡十六国', era: '304-439', desc: '匈奴·羯·鲜卑·氐·羌' },
+    { name: '刘裕代晋',   era: '420',   desc: '刘裕建宋·东晋亡' },
+  ],
+  nanbei: [
+    { name: '南北朝对峙', era: '420-589', desc: '南朝宋齐梁陈·北朝魏齐周' },
+    { name: '北魏孝文帝', era: '471-499', desc: '迁都洛阳·汉化改革' },
+    { name: '六镇起义',   era: '523',   desc: '军阀崛起·北魏分裂' },
+    { name: '杨坚代周',   era: '581',   desc: '北周静帝禅位·隋朝始' },
+    { name: '隋灭陈',     era: '589',   desc: '南北统一·三百年分裂终结' },
+  ],
+  sui: [
+    { name: '开皇之治', era: '581-600', desc: '杨坚改革·府兵均田' },
+    { name: '科举制创立', era: '605',    desc: '分科取士·打破门阀' },
+    { name: '大运河',     era: '605-610', desc: '贯通南北·连接五水' },
+    { name: '炀帝暴政',   era: '',       desc: '三征高丽·民怨沸腾' },
+    { name: '隋朝覆亡',   era: '618',    desc: '李渊入长安·隋亡' },
+  ],
+  tang: [
+    { name: '李渊建唐', era: '618',      desc: '削平群雄·统一天下' },
+    { name: '贞观之治', era: '627-649',  desc: '太宗李世民·万国来朝' },
+    { name: '武则天称帝', era: '690',    desc: '改国号为周·唯一女皇' },
+    { name: '开元盛世', era: '713-741',  desc: '玄宗·李杜文章·盛极一时' },
+    { name: '安史之乱', era: '755-763',  desc: '安禄山反·由盛转衰' },
+    { name: '唐末乱世', era: '875-907',  desc: '黄巢起义·朱温篡唐' },
+  ],
+  wudai: [
+    { name: '五代更迭',   era: '907-960',    desc: '梁唐晋汉周·五十四年五朝换' },
+    { name: '十国割据',   era: '902-979',    desc: '南方九国加北汉·各据一方' },
+    { name: '幽云十六州', era: '936',        desc: '石敬瑭割地·燕云入辽' },
+    { name: '后周改革',   era: '951-960',    desc: '柴荣励精图治·赵匡胤陈桥兵变' },
+  ],
+  beisong: [
+    { name: '陈桥兵变', era: '960',      desc: '黄袍加身·杯酒释兵权' },
+    { name: '澶渊之盟', era: '1004',     desc: '宋辽和议·百年和平' },
+    { name: '庆历新政', era: '1043',     desc: '范仲淹改革·先天下之忧' },
+    { name: '王安石变法', era: '1069',   desc: '富国强兵·新旧党争' },
+    { name: '靖康之耻', era: '1127',     desc: '金灭北宋·徽钦二帝北狩' },
+  ],
+  nansong: [
+    { name: '赵构建南宋', era: '1127',  desc: '定都临安·偏安江南' },
+    { name: '岳飞北伐',   era: '1140',  desc: '直捣黄龙·莫须有之冤' },
+    { name: '隆兴和议',   era: '1164',  desc: '宋金再和·叔侄之称' },
+    { name: '宋学兴盛',   era: '',      desc: '朱熹理学·陆九渊心学' },
+    { name: '宋元战争',   era: '1235-1279', desc: '忽必烈南征·崖山蹈海' },
+  ],
+  yuan: [
+    { name: '忽必烈建元', era: '1271',  desc: '取易经·大元' },
+    { name: '灭南宋',     era: '1279',  desc: '崖山海战·陆秀夫负帝投海' },
+    { name: '行省制度',   era: '',      desc: '全国设行省·影响至今' },
+    { name: '马可波罗',   era: '1275-1292', desc: '游记传世·沟通东西' },
+    { name: '红巾军起义', era: '1351',  desc: '元末民变·天下动荡' },
+    { name: '元亡',       era: '1368',  desc: '朱元璋北伐·顺帝北逃' },
+  ],
+  ming: [
+    { name: '洪武之治', era: '1368-1398', desc: '朱元璋开国·废丞相设内阁' },
+    { name: '永乐盛世', era: '1402-1424', desc: '朱棣迁都北京·修永乐大典' },
+    { name: '郑和下西洋', era: '1405-1433', desc: '七下西洋·远达非洲' },
+    { name: '万历中兴', era: '1573-1582', desc: '张居正一条鞭法改革' },
+    { name: '崇祯亡国', era: '1644',    desc: '李自成破北京·清军入关' },
+  ],
+  qing: [
+    { name: '清兵入关',   era: '1644',      desc: '吴三桂引清·顺治定鼎' },
+    { name: '康乾盛世',   era: '1661-1796', desc: '康熙·雍正·乾隆·疆域辽阔' },
+    { name: '鸦片战争',   era: '1840',      desc: '英国东来·签订南京条约' },
+    { name: '洋务运动',   era: '1861-1895', desc: '师夷长技·甲午一战成空' },
+    { name: '戊戌变法',   era: '1898',      desc: '百日维新·康梁变法' },
+    { name: '辛亥革命',   era: '1911',      desc: '武昌起义·终结帝制' },
+  ],
+  minguo: [
+    { name: '中华民国建立', era: '1912',  desc: '孙中山就任临时大总统' },
+    { name: '北伐战争',     era: '1926-1928', desc: '国民革命军统一中国' },
+    { name: '十年建设',     era: '1927-1937', desc: '南京国民政府·黄金十年' },
+    { name: '抗日战争',     era: '1937-1945', desc: '全面抗战·十四年浴血' },
+    { name: '国共内战',     era: '1945-1949', desc: '决定中国命运之战' },
+  ],
+  zhongguo: [
+    { name: '开国大典', era: '1949',   desc: '中华人民共和国成立' },
+    { name: '改革开放', era: '1978',   desc: '十一届三中全会·经济腾飞' },
+    { name: '港澳回归', era: '1997-1999', desc: '香港·澳门回归祖国' },
+    { name: '加入世贸', era: '2001',   desc: '融入全球经济体系' },
+    { name: '新时代',   era: '2012',   desc: '中华民族复兴之路' },
+  ],
+};
 
-dynastyData.forEach((dynasty, index) => {
-  // 交替排列：偶数 index 在上，奇数在下
-  const isUp = index % 2 === 0;
-  const cardClass = isUp ? 'card-up' : 'card-down';
+// ──────────────────────────────────────────
+// 通用：构建单个时间轴节点 DOM
+// ──────────────────────────────────────────
+function buildNode(item, index, onClick) {
+  const mod = index % 4;
+  const isUp = mod === 0 || mod === 2;
+  const isFar = mod === 2 || mod === 3;
+  const cardClass = (isUp ? 'card-up' : 'card-down') + (isFar ? ' offset-far' : '');
 
   const node = document.createElement('div');
   node.className = `timeline-node ${cardClass}`;
-  node.style.left = `${dynasty.pos}%`;
+  node.style.left = `${item.pos}%`;
 
-  // 卡片
   const card = document.createElement('div');
   card.className = 'node-card';
   card.innerHTML = `
-    <div class="card-dynasty">${dynasty.name}</div>
-    <div class="card-era">${dynasty.start} — ${dynasty.end}</div>
+    <div class="card-dynasty">${item.name}</div>
+    <div class="card-era">${item.era ? item.era : item.start + ' — ' + item.end}</div>
   `;
 
-  // 连线
   const connector = document.createElement('div');
   connector.className = 'node-connector';
 
-  // 圆点
   const dot = document.createElement('div');
   dot.className = 'node-dot';
 
@@ -329,48 +586,92 @@ dynastyData.forEach((dynasty, index) => {
   node.appendChild(connector);
   node.appendChild(dot);
 
-  // 点击事件
   node.addEventListener('click', (e) => {
     e.stopPropagation();
-    enterMicroTimeline(dynasty);
+    onClick(item);
   });
 
-  macroTimeline.appendChild(node);
-});
+  return node;
+}
+
+// ──────────────────────────────────────────
+// 通用：在容器中渲染时间轴
+// ──────────────────────────────────────────
+function renderTimeline(container, data, onClick) {
+  container.innerHTML = '';
+  data.forEach((item, index) => {
+    container.appendChild(buildNode(item, index, onClick));
+  });
+}
+
+// ──────────────────────────────────────────
+// 渲染主时间轴
+// ──────────────────────────────────────────
+const macroTimeline = document.getElementById('macroTimeline');
+renderTimeline(macroTimeline, dynastyData, enterMicroTimeline);
 
 // ──────────────────────────────────────────
 // 交互：进入次级时间轴
 // ──────────────────────────────────────────
 function enterMicroTimeline(dynasty) {
-  alert(`正在进入 ${dynasty.name} 详细时间轴`);
-
   const macroStage = document.getElementById('macroStage');
   const microStage = document.getElementById('microStage');
-  const microContent = document.getElementById('microContent');
+  const microInner = document.getElementById('microInner');
 
-  // 更新次级标题
-  microContent.innerHTML = `
-    <div style="text-align:center;">
-      <p class="text-3xl font-bold tracking-widest mb-2" style="color:var(--accent);">${dynasty.name}</p>
-      <p class="text-lg tracking-wide" style="color:var(--ink-light);">${dynasty.start} — ${dynasty.end}</p>
-      <p class="text-sm mt-6 tracking-widest" style="color:var(--ink-light);">详细时间轴加载中...</p>
-    </div>
-  `;
+  const subData = subTimelineData[dynasty.id];
+
+  if (!subData) {
+    // 无次级数据时显示占位
+    microInner.innerHTML = `
+      <div style="text-align:center;">
+        <p class="text-3xl font-bold tracking-widest mb-2" style="color:var(--accent);">${dynasty.name}</p>
+        <p class="text-lg tracking-wide" style="color:var(--ink-light);">${dynasty.start} — ${dynasty.end}</p>
+        <p class="text-sm mt-6 tracking-widest" style="color:var(--ink-light);">详细时间轴加载中...</p>
+      </div>
+    `;
+    microInner.style.display = 'flex';
+    microInner.style.alignItems = 'center';
+    microInner.style.justifyContent = 'center';
+  } else {
+    // 构建次级时间轴
+    microInner.style.display = 'flex';
+    microInner.innerHTML = `
+      <button class="back-btn" id="backBtn">← 返回总览</button>
+      <div class="micro-header">
+        <p class="dynasty-title">${dynasty.name}</p>
+        <p class="dynasty-era">${dynasty.start} — ${dynasty.end}</p>
+      </div>
+      <div id="microTimeline" class="micro-timeline"></div>
+    `;
+
+    // 为次级节点分配 pos
+    const count = subData.length;
+    const subWithPos = subData.map((item, i) => ({
+      ...item,
+      pos: count === 1 ? 50 : 5 + (i / (count - 1)) * 90,
+      start: item.era || '',
+      end: item.desc || '',
+    }));
+
+    const microTimeline = document.getElementById('microTimeline');
+    renderTimeline(microTimeline, subWithPos, (subItem) => {
+      alert(`${subItem.name}\n${subItem.era ? subItem.era + '  ' : ''}${subItem.desc || ''}`);
+    });
+
+    // 返回按钮
+    document.getElementById('backBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.body.classList.remove('micro-active');
+      microStage.classList.add('macro-hidden');
+      macroStage.classList.remove('macro-hidden');
+    });
+  }
 
   // 平滑切换
+  document.body.classList.add('micro-active');
   macroStage.classList.add('macro-hidden');
   microStage.classList.remove('macro-hidden');
 }
-
-// 点击空白区域返回主时间轴（演示用）
-document.getElementById('microStage').addEventListener('click', function(e) {
-  if (e.target === this || e.target.closest('#microContent p:last-child')) {
-    const macroStage = document.getElementById('macroStage');
-    const microStage = document.getElementById('microStage');
-    microStage.classList.add('macro-hidden');
-    macroStage.classList.remove('macro-hidden');
-  }
-});
 </script>
 
 </body>
