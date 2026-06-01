@@ -122,11 +122,8 @@ const subTimelineData = {
     { name: '幽王',     era: '前781',    desc: '烽火戏诸侯·犬戎灭周',  key_figures: ['幽王', '褒姒'],    artifacts: [] },
   ],
   dongzhou: [
-    { name: '平王东迁', era: '前770',    desc: '定都洛邑·东周始',      key_figures: ['平王'],           artifacts: [] },
-    { name: '春秋五霸', era: '前770-前476', desc: '齐桓·晋文·楚庄·吴阖闾·越勾践', key_figures: ['齐桓公', '晋文公', '楚庄王'], artifacts: ['青铜剑'] },
-    { name: '孔子',     era: '前551-前479', desc: '儒家始祖·周游列国',  key_figures: ['孔子', '子路', '子贡'], artifacts: ['论语'] },
-    { name: '战国七雄', era: '前475-前221', desc: '齐楚燕韩赵魏秦·百家争鸣', key_figures: ['商鞅', '孙膑', '屈原'], artifacts: ['曾侯乙编钟', '秦公镈'] },
-    { name: '秦灭周',   era: '前256',    desc: '周赧王献地·东周亡',    key_figures: ['周赧王', '秦昭襄王'], artifacts: [] },
+    { name: '春秋时期', era: '前770-前476', type: 'group', subId: 'chunqiu' },
+    { name: '战国时期', era: '前475-前221', type: 'group', subId: 'zhanguo' },
   ],
   qin: [
     { name: '秦始皇',   era: '前221',    desc: '统一六国·始称皇帝',    key_figures: ['嬴政', '李斯', '王翦'], artifacts: ['秦始皇陵', '秦诏版'] },
@@ -266,5 +263,33 @@ const subTimelineData = {
     { name: '港澳回归', era: '1997-1999', desc: '香港·澳门回归祖国',        key_figures: ['江泽民', '董建华'], artifacts: [] },
     { name: '加入世贸', era: '2001',      desc: '融入全球经济体系',          key_figures: ['江泽民', '朱镕基'], artifacts: [] },
     { name: '新时代',   era: '2012',      desc: '中华民族复兴之路',          key_figures: ['习近平'],         artifacts: [] },
+  ],
+};
+
+// ──────────────────────────────────────────
+// 三级事件时间轴（子时代内的详细事件）
+// ──────────────────────────────────────────
+const eventTimelineData = {
+  chunqiu: [
+    { name: '平王东迁',   era: '前770',      desc: '定都洛邑·东周始',        key_figures: ['周平王'],             artifacts: [] },
+    { name: '繻葛之战',   era: '前707',      desc: '郑庄公箭射周桓王·王权衰落', key_figures: ['郑庄公', '周桓王'],  artifacts: [] },
+    { name: '齐桓公称霸', era: '前685-前643', desc: '管仲改革·尊王攘夷·九合诸侯', key_figures: ['齐桓公', '管仲'], artifacts: [] },
+    { name: '城濮之战',   era: '前632',      desc: '晋文公退避三舍·大败楚军', key_figures: ['晋文公', '楚成王', '先轸'], artifacts: [] },
+    { name: '楚庄王问鼎', era: '前606',      desc: '饮马黄河·问鼎中原',      key_figures: ['楚庄王', '孙叔敖'],   artifacts: [] },
+    { name: '弭兵之会',   era: '前546',      desc: '晋楚平分霸权·四十年和平', key_figures: ['向戌', '赵武'],         artifacts: [] },
+    { name: '孔子周游列国', era: '前497-前484', desc: '儒家始祖·删述六经',   key_figures: ['孔子', '子路', '子贡', '颜回'], artifacts: ['论语'] },
+    { name: '吴越争霸',   era: '前494-前473', desc: '夫差北上·勾践卧薪尝胆',  key_figures: ['夫差', '勾践', '范蠡', '文种'], artifacts: ['越王勾践剑'] },
+  ],
+  zhanguo: [
+    { name: '三家分晋',   era: '前403',      desc: '韩赵魏列为诸侯·战国始',  key_figures: ['韩虔', '赵籍', '魏斯', '周威烈王'], artifacts: [] },
+    { name: '商鞅变法',   era: '前356-前338', desc: '废井田·开阡陌·秦国富强', key_figures: ['商鞅', '秦孝公'],      artifacts: ['商鞅方升'] },
+    { name: '桂陵/马陵之战', era: '前353-前341', desc: '孙膑围魏救赵·庞涓自刎', key_figures: ['孙膑', '庞涓', '田忌'], artifacts: [] },
+    { name: '张仪连横',   era: '前328-前309', desc: '以横破纵·秦取巴蜀汉中',  key_figures: ['张仪', '秦惠文王', '司马错'], artifacts: [] },
+    { name: '赵武灵王胡服骑射', era: '前307', desc: '军事改革·北驱林胡楼烦',   key_figures: ['赵武灵王'],           artifacts: [] },
+    { name: '长平之战',   era: '前260',      desc: '白起坑杀赵卒四十万·秦霸天下', key_figures: ['白起', '赵括', '廉颇'], artifacts: [] },
+    { name: '百家争鸣',   era: '',           desc: '儒墨道法兵名阴阳·稷下学宫', key_figures: ['孟子', '荀子', '庄子', '韩非', '墨子', '公孙龙'], artifacts: [] },
+    { name: '屈原投江',   era: '前278',      desc: '秦拔郢都·楚辞绝唱',      key_figures: ['屈原', '楚顷襄王'],    artifacts: ['楚辞·离骚'] },
+    { name: '荆轲刺秦',   era: '前227',      desc: '风萧萧兮易水寒·图穷匕见', key_figures: ['荆轲', '燕太子丹', '嬴政'], artifacts: [] },
+    { name: '秦灭六国',   era: '前230-前221', desc: '十年横扫韩赵魏楚燕齐·天下一统', key_figures: ['嬴政', '王翦', '王贲', '李斯'], artifacts: [] },
   ],
 };
