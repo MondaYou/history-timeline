@@ -328,25 +328,142 @@
   .micro-timeline::before { left: -3px; }
   .micro-timeline::after  { right: -3px; }
 
-  /* ── 响应式微调 ── */
+  /* ── 响应式：移动端纵向轴 ── */
   @media (max-width: 768px) {
-    .main-title { font-size: 1.35rem; }
-    .subtitle  { font-size: 0.65rem; }
-    .macro-timeline { width: 1200px; margin: 0 60px; }
-    .micro-timeline { width: 1000px; margin: 0 60px; }
-    :root {
-      --connector-width: 28px;
+    /* 容器切为纵向滚动 */
+    .timeline-stage {
+      overflow-y: auto;
+      overflow-x: hidden;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      cursor: default;
     }
-    .node-card { padding: 4px 8px; }
-    .card-dynasty { font-size: 0.66rem; }
-    .card-era    { font-size: 0.54rem; }
-    .micro-header .dynasty-title { font-size: 1.2rem; }
-    .back-btn { top: 12px; left: 12px; padding: 6px 14px; font-size: 0.75rem; }
-    .modal-content { max-width: 320px; padding: 24px 20px; }
-    .modal-title { font-size: 1.1rem; }
-    .modal-era   { font-size: 0.7rem; }
-    .modal-desc  { font-size: 0.78rem; }
-    .modal-close-btn { top: 4px; right: 8px; font-size: 1rem; padding: 4px 8px; }
+    .timeline-stage.grabbing { cursor: default; }
+
+    /* 主轴 → 纵线 */
+    .macro-timeline {
+      width: 2px;
+      height: 3200px;
+      margin: 140px 0;
+      flex-shrink: 0;
+    }
+    .macro-timeline::before,
+    .macro-timeline::after {
+      top: auto;
+      bottom: auto;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .macro-timeline::before { top: -3px; }
+    .macro-timeline::after  { bottom: -3px; }
+
+    /* 次级轴 → 纵线 */
+    .micro-timeline {
+      width: 2px;
+      height: 2400px;
+      margin: 140px 0;
+      flex-shrink: 0;
+      opacity: 0.7;
+    }
+    .micro-timeline::before,
+    .micro-timeline::after {
+      top: auto;
+      bottom: auto;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .micro-timeline::before { top: -3px; }
+    .micro-timeline::after  { bottom: -3px; }
+
+    .micro-stage-inner {
+      min-width: 100%;
+      min-height: 100vh;
+      justify-content: flex-start;
+    }
+
+    /* 节点沿纵轴定位 */
+    .timeline-node {
+      left: 50% !important;
+      top: var(--node-pos);
+      transform: translate(-50%, -50%);
+    }
+
+    /* 卡片：card-up → 右侧, card-down → 左侧 */
+    .timeline-node.card-up .node-card {
+      left: calc(50% + var(--card-offset) + 4px);
+      right: auto;
+      bottom: auto;
+      top: 50%;
+      transform: translateY(-50%);
+      max-width: 130px;
+    }
+    .timeline-node.card-down .node-card {
+      left: auto;
+      right: calc(50% + var(--card-offset) + 4px);
+      top: 50%;
+      bottom: auto;
+      transform: translateY(-50%);
+      max-width: 130px;
+    }
+    .timeline-node:hover .node-card {
+      transform: translateY(-50%) scale(1.06);
+    }
+
+    /* 连接线 → 水平 */
+    .timeline-node.card-up .node-connector {
+      right: auto;
+      bottom: auto;
+      left: 50%;
+      top: 50%;
+      width: var(--card-offset);
+      height: 1.5px;
+      transform: translateY(-50%);
+    }
+    .timeline-node.card-down .node-connector {
+      left: auto;
+      bottom: auto;
+      right: 50%;
+      top: 50%;
+      width: var(--card-offset);
+      height: 1.5px;
+      transform: translateY(-50%);
+    }
+
+    /* 标题 */
+    .main-title { font-size: 1.2rem; }
+    .subtitle  { font-size: 0.6rem; }
+    .title-area { padding-top: 16px; }
+
+    /* 返回按钮 */
+    .back-btn {
+      top: 10px;
+      left: 10px;
+      padding: 5px 12px;
+      font-size: 0.7rem;
+    }
+
+    /* 次级标题 */
+    .micro-header { top: 20px; }
+    .micro-header .dynasty-title { font-size: 1.1rem; }
+
+    /* 卡片与变量 */
+    .node-card { padding: 4px 7px; }
+    .card-dynasty { font-size: 0.62rem; }
+    .card-era    { font-size: 0.5rem; }
+    :root {
+      --connector-width: 24px;
+      --connector-width-far: 48px;
+      --dot-size: 8px;
+      --dot-hover-size: 14px;
+    }
+
+    /* 模态框 */
+    .modal-content { max-width: 280px; padding: 20px 16px; }
+    .modal-title { font-size: 1rem; }
+    .modal-era   { font-size: 0.65rem; }
+    .modal-desc  { font-size: 0.72rem; }
+    .modal-close-btn { top: 2px; right: 6px; font-size: 0.9rem; padding: 4px 6px; }
   }
 
   /* ── 模态框 ── */
@@ -676,6 +793,7 @@ function buildNode(item, index, onClick) {
   const node = document.createElement('div');
   node.className = `timeline-node ${cardClass}`;
   node.style.left = `${item.pos}%`;
+  node.style.setProperty('--node-pos', `${item.pos}%`);
 
   const card = document.createElement('div');
   card.className = 'node-card';
@@ -747,15 +865,18 @@ const macroStage = document.getElementById('macroStage');
 const microStage = document.getElementById('microStage');
 renderTimeline(macroTimeline, dynastyData, enterMicroTimeline);
 // 初始滚动到主时间轴中央
-macroStage.scrollLeft = (macroStage.scrollWidth - macroStage.clientWidth) / 2;
+if (window.innerWidth > 768) {
+  macroStage.scrollLeft = (macroStage.scrollWidth - macroStage.clientWidth) / 2;
+}
 
 // ──────────────────────────────────────────
-// 拖拽平移
+// 拖拽平移（仅桌面端）
 // ──────────────────────────────────────────
 function enableDragScroll(stage) {
   let isDown = false, startX, scrollLeft;
 
   stage.addEventListener('mousedown', (e) => {
+    if (window.innerWidth <= 768) return;
     isDown = true;
     stage.classList.add('grabbing');
     startX = e.pageX - stage.offsetLeft;
@@ -828,7 +949,9 @@ function enterMicroTimeline(dynasty) {
     // 返回按钮
     document.getElementById('backBtn').addEventListener('click', (e) => {
       e.stopPropagation();
-      macroStage.scrollLeft = (macroStage.scrollWidth - macroStage.clientWidth) / 2;
+      if (window.innerWidth > 768) {
+        macroStage.scrollLeft = (macroStage.scrollWidth - macroStage.clientWidth) / 2;
+      }
       document.body.classList.remove('micro-active');
       microStage.classList.add('macro-hidden');
       macroStage.classList.remove('macro-hidden');
@@ -836,6 +959,7 @@ function enterMicroTimeline(dynasty) {
   }
 
   // 平滑切换
+  microStage.scrollTop = 0;
   microStage.scrollLeft = 0;
   document.body.classList.add('micro-active');
   macroStage.classList.add('macro-hidden');
