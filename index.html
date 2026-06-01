@@ -91,9 +91,14 @@
     inset: 0;
     display: flex;
     align-items: center;
-    justify-content: center;
+    overflow-x: auto;
+    cursor: grab;
+    user-select: none;
     transition: opacity 0.5s ease, transform 0.5s ease;
   }
+  .timeline-stage::-webkit-scrollbar { display: none; }
+  .timeline-stage { -ms-overflow-style: none; scrollbar-width: none; }
+  .timeline-stage.grabbing { cursor: grabbing; }
 
   .timeline-stage.macro-hidden {
     opacity: 0;
@@ -104,8 +109,8 @@
   /* ── 主轴 ── */
   .macro-timeline {
     position: relative;
-    width: 88vw;
-    max-width: 1200px;
+    width: 2000px;
+    flex-shrink: 0;
     height: 2px;
     background: var(--timeline-line);
     border-radius: 1px;
@@ -242,8 +247,8 @@
   /* ── 次级时间轴专属 ── */
   .micro-stage-inner {
     position: relative;
-    width: 100%;
-    height: 100%;
+    min-width: 100vw;
+    min-height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -274,7 +279,7 @@
   }
 
   .back-btn {
-    position: absolute;
+    position: fixed;
     top: 24px;
     left: 32px;
     z-index: 10;
@@ -299,8 +304,8 @@
 
   .micro-timeline {
     position: relative;
-    width: 80vw;
-    max-width: 1000px;
+    width: 1400px;
+    flex-shrink: 0;
     height: 2px;
     background: var(--timeline-line);
     border-radius: 1px;
@@ -325,7 +330,8 @@
   @media (max-width: 768px) {
     .main-title { font-size: 1.35rem; }
     .subtitle  { font-size: 0.65rem; }
-    .macro-timeline { width: 94vw; }
+    .macro-timeline { width: 1200px; }
+    .micro-timeline { width: 1000px; }
     :root {
       --connector-width: 28px;
     }
@@ -735,14 +741,46 @@ document.addEventListener('keydown', (e) => {
 // 渲染主时间轴
 // ──────────────────────────────────────────
 const macroTimeline = document.getElementById('macroTimeline');
+const macroStage = document.getElementById('macroStage');
+const microStage = document.getElementById('microStage');
 renderTimeline(macroTimeline, dynastyData, enterMicroTimeline);
+// 初始滚动到主时间轴中央
+macroStage.scrollLeft = (macroStage.scrollWidth - macroStage.clientWidth) / 2;
+
+// ──────────────────────────────────────────
+// 拖拽平移
+// ──────────────────────────────────────────
+function enableDragScroll(stage) {
+  let isDown = false, startX, scrollLeft;
+
+  stage.addEventListener('mousedown', (e) => {
+    isDown = true;
+    stage.classList.add('grabbing');
+    startX = e.pageX - stage.offsetLeft;
+    scrollLeft = stage.scrollLeft;
+  });
+
+  const stop = () => {
+    isDown = false;
+    stage.classList.remove('grabbing');
+  };
+  stage.addEventListener('mouseleave', stop);
+  stage.addEventListener('mouseup', stop);
+
+  stage.addEventListener('mousemove', (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - stage.offsetLeft;
+    stage.scrollLeft = scrollLeft - (x - startX);
+  });
+}
+enableDragScroll(macroStage);
+enableDragScroll(microStage);
 
 // ──────────────────────────────────────────
 // 交互：进入次级时间轴
 // ──────────────────────────────────────────
 function enterMicroTimeline(dynasty) {
-  const macroStage = document.getElementById('macroStage');
-  const microStage = document.getElementById('microStage');
   const microInner = document.getElementById('microInner');
 
   const subData = subTimelineData[dynasty.id];
@@ -788,6 +826,7 @@ function enterMicroTimeline(dynasty) {
     // 返回按钮
     document.getElementById('backBtn').addEventListener('click', (e) => {
       e.stopPropagation();
+      macroStage.scrollLeft = (macroStage.scrollWidth - macroStage.clientWidth) / 2;
       document.body.classList.remove('micro-active');
       microStage.classList.add('macro-hidden');
       macroStage.classList.remove('macro-hidden');
@@ -795,6 +834,7 @@ function enterMicroTimeline(dynasty) {
   }
 
   // 平滑切换
+  microStage.scrollLeft = 0;
   document.body.classList.add('micro-active');
   macroStage.classList.add('macro-hidden');
   microStage.classList.remove('macro-hidden');
