@@ -110,6 +110,7 @@
   .macro-timeline {
     position: relative;
     width: 2000px;
+    margin: 0 100px;
     flex-shrink: 0;
     height: 2px;
     background: var(--timeline-line);
@@ -305,6 +306,7 @@
   .micro-timeline {
     position: relative;
     width: 1400px;
+    margin: 0 100px;
     flex-shrink: 0;
     height: 2px;
     background: var(--timeline-line);
@@ -330,8 +332,8 @@
   @media (max-width: 768px) {
     .main-title { font-size: 1.35rem; }
     .subtitle  { font-size: 0.65rem; }
-    .macro-timeline { width: 1200px; }
-    .micro-timeline { width: 1000px; }
+    .macro-timeline { width: 1200px; margin: 0 60px; }
+    .micro-timeline { width: 1000px; margin: 0 60px; }
     :root {
       --connector-width: 28px;
     }
