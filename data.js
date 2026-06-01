@@ -12,7 +12,7 @@ const dynastyData = [
   { id: 'xia',        name: '夏',         start: '约前2070', end: '约前1600', pos: 6  },
   { id: 'shang',      name: '商',         start: '约前1600', end: '约前1046', pos: 10 },
   { id: 'xizhou',     name: '西周',       start: '约前1046', end: '前771',    pos: 14 },
-  { id: 'dongzhou',   name: '东周',       start: '前770',    end: '前256',    pos: 18 },
+  { id: 'dongzhou',   name: '东周',       start: '前770',    end: '前221',    pos: 18 },
   { id: 'qin',        name: '秦',         start: '前221',    end: '前207',    pos: 22 },
   { id: 'xihan',      name: '西汉',       start: '前202',    end: '公元9',    pos: 26 },
   { id: 'xin',        name: '新朝',       start: '公元9',    end: '23',       pos: 30 },
@@ -26,11 +26,12 @@ const dynastyData = [
   { id: 'wudai',      name: '五代十国',   start: '907',      end: '960',      pos: 64 },
   { id: 'beisong',    name: '北宋',       start: '960',      end: '1127',     pos: 68 },
   { id: 'nansong',    name: '南宋',       start: '1127',     end: '1279',     pos: 72 },
-  { id: 'yuan',       name: '元',         start: '1271',     end: '1368',     pos: 76 },
-  { id: 'ming',       name: '明',         start: '1368',     end: '1644',     pos: 80 },
-  { id: 'qing',       name: '清',         start: '1644',     end: '1912',     pos: 85 },
-  { id: 'minguo',     name: '中华民国',   start: '1912',     end: '1949',     pos: 90 },
-  { id: 'zhongguo',   name: '中华人民共和国', start: '1949', end: '至今',    pos: 95 },
+  { id: 'jin',        name: '金',         start: '1115',     end: '1234',     pos: 76 },
+  { id: 'yuan',       name: '元',         start: '1271',     end: '1368',     pos: 80 },
+  { id: 'ming',       name: '明',         start: '1368',     end: '1644',     pos: 85 },
+  { id: 'qing',       name: '清',         start: '1644',     end: '1912',     pos: 90 },
+  { id: 'minguo',     name: '中华民国',   start: '1912',     end: '1949',     pos: 95 },
+  { id: 'zhongguo',   name: '中华人民共和国', start: '1949', end: '至今',    pos: 99 },
 ];
 
 const subTimelineData = {
@@ -134,6 +135,7 @@ const subTimelineData = {
     { name: '始皇驾崩', era: '前210',    desc: '沙丘之变·赵高专权',    key_figures: ['嬴政', '赵高', '李斯'], artifacts: [] },
     { name: '陈胜起义', era: '前209',    desc: '大泽乡揭竿·天下响应',   key_figures: ['陈胜', '吴广', '项梁'], artifacts: [] },
     { name: '秦亡',     era: '前207',    desc: '刘邦入关·子婴献玺',    key_figures: ['子婴', '刘邦', '项羽'], artifacts: [] },
+    { name: '楚汉争霸', era: '前206-前202', desc: '项羽分封十八路诸侯·刘邦暗度陈仓·垓下之围', key_figures: ['项羽', '刘邦', '韩信', '张良', '萧何'], artifacts: [] },
   ],
   xihan: [
     { name: '刘邦建汉', era: '前202',    desc: '楚汉争霸·定都长安',    key_figures: ['刘邦', '萧何', '韩信'], artifacts: ['汉并天下瓦当'] },
@@ -218,6 +220,15 @@ const subTimelineData = {
     { name: '隆兴和议',   era: '1164',     desc: '宋金再和·叔侄之称',      key_figures: ['孝宗'],           artifacts: [] },
     { name: '宋学兴盛',   era: '',         desc: '朱熹理学·陆九渊心学',     key_figures: ['朱熹', '陆九渊'],  artifacts: ['四书章句集注'] },
     { name: '宋元战争',   era: '1235-1279', desc: '忽必烈南征·崖山蹈海',   key_figures: ['文天祥', '陆秀夫', '张世杰'], artifacts: [] },
+  ],
+  jin: [
+    { name: '完颜阿骨打建金', era: '1115',   desc: '反辽建金·定都会宁府',    key_figures: ['完颜阿骨打', '完颜宗翰', '完颜宗望'], artifacts: [] },
+    { name: '灭辽',           era: '1125',   desc: '联宋灭辽·辽天祚帝被俘',  key_figures: ['完颜宗翰', '完颜宗望', '辽天祚帝'], artifacts: [] },
+    { name: '靖康之变',       era: '1127',   desc: '南下攻宋·徽钦二帝北狩',  key_figures: ['完颜宗望', '完颜宗翰', '徽宗', '钦宗'], artifacts: [] },
+    { name: '绍兴和议',       era: '1141',   desc: '杀岳飞·宋称臣纳贡·划淮而治', key_figures: ['完颜宗弼', '秦桧', '宋高宗'], artifacts: [] },
+    { name: '海陵王南侵',     era: '1161',   desc: '完颜亮倾国南征·采石之战败亡', key_figures: ['完颜亮', '虞允文'], artifacts: [] },
+    { name: '大定之治',       era: '1161-1189', desc: '金世宗与民休息·北疆安定', key_figures: ['金世宗（完颜雍）'], artifacts: [] },
+    { name: '蒙古攻金',       era: '1211-1234', desc: '野狐岭之战·中都陷落·蔡州城破金亡', key_figures: ['金哀宗', '成吉思汗', '窝阔台', '拖雷'], artifacts: [] },
   ],
   yuan: [
     { name: '忽必烈建元', era: '1271',     desc: '取易经·大元',            key_figures: ['忽必烈', '刘秉忠'], artifacts: [] },
