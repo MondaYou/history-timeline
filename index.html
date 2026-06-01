@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>中国历史时间轴</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap');
 
@@ -483,6 +484,7 @@
     .modal-tag { font-size: 0.62rem; padding: 2px 7px; }
     .modal-sidebar-heading { font-size: 0.6rem; }
     .modal-image-placeholder { max-width: 180px; }
+    .modal-model-viewer { max-width: 220px; }
     .modal-image-hint { font-size: 0.6rem; }
   }
 
@@ -685,6 +687,50 @@
     0%, 100% { border-color: rgba(196, 163, 90, 0.22); }
     50%      { border-color: rgba(196, 163, 90, 0.5);  }
   }
+
+  /* 3D 模型查看器 */
+  .modal-model-viewer {
+    aspect-ratio: 4 / 3;
+    border-radius: 3px;
+    margin-bottom: 10px;
+    position: relative;
+    overflow: hidden;
+    background: rgba(44, 36, 22, 0.03);
+    border: 2px solid rgba(196, 163, 90, 0.3);
+    box-shadow: inset 0 0 30px rgba(44, 36, 22, 0.04);
+  }
+
+  .modal-model-viewer model-viewer {
+    width: 100%;
+    height: 100%;
+    --progress-bar-color: var(--accent-gold);
+    --progress-bar-height: 3px;
+    --progress-mask: transparent;
+  }
+
+  .modal-model-viewer .model-loading-spinner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .modal-model-viewer .model-loading-spinner::after {
+    content: '';
+    width: 28px;
+    height: 28px;
+    border: 2px solid rgba(196, 163, 90, 0.2);
+    border-top-color: var(--accent-gold);
+    border-radius: 50%;
+    animation: modelSpin 0.8s linear infinite;
+  }
+
+  @keyframes modelSpin {
+    to { transform: rotate(360deg); }
+  }
 </style>
 </head>
 <body>
@@ -723,7 +769,7 @@
           </div>
           <div id="artifactsSection" class="modal-sidebar-section">
             <p class="modal-sidebar-heading">延伸考证</p>
-            <div class="modal-image-placeholder">
+            <div id="modalMediaBox" class="modal-image-placeholder">
               <span class="modal-image-hint">文物影像</span>
             </div>
             <div id="modalArtifactTags" class="modal-tags"></div>
@@ -796,6 +842,9 @@ const figureTags     = document.getElementById('modalFigureTags');
 const artifactTags   = document.getElementById('modalArtifactTags');
 const figuresSection = document.getElementById('figuresSection');
 const artifactsSec   = document.getElementById('artifactsSection');
+const modalMediaBox  = document.getElementById('modalMediaBox');
+
+function isModelPath(s) { return /\.(glb|gltf)$/i.test(s); }
 
 function populateTags(container, items, tagClass) {
   container.innerHTML = '';
@@ -818,11 +867,47 @@ function openModal(title, era, desc, figures, artifacts) {
   figuresSection.classList.toggle('has-content', hasFigures);
   if (hasFigures) populateTags(figureTags, figures, 'figure');
 
-  // 延伸考证（文物标签 + 占位图始终可见）
-  const hasArtifacts = artifacts && artifacts.length > 0;
+  // 延伸考证 — 分离 3D 模型路径与文本标签
+  const allArtifacts  = artifacts || [];
+  const modelPaths    = allArtifacts.filter(isModelPath);
+  const textArtifacts = allArtifacts.filter((a) => !isModelPath(a));
+
   artifactsSec.classList.add('has-content');
-  if (hasArtifacts) {
-    populateTags(artifactTags, artifacts, 'artifact');
+
+  // 3D 模型 或 静态占位
+  if (modelPaths.length > 0) {
+    modalMediaBox.className = 'modal-model-viewer';
+    modalMediaBox.innerHTML = `
+      <div class="model-loading-spinner"></div>
+      <model-viewer
+        src="${modelPaths[0]}"
+        camera-controls
+        auto-rotate
+        auto-rotate-delay="1200"
+        rotation-per-second="30deg"
+        shadow-intensity="0.8"
+        exposure="1.1"
+        interaction-prompt="auto"
+        camera-orbit="0deg 75deg 105%"
+        min-camera-orbit="auto auto 50%"
+        max-camera-orbit="auto auto 200%"
+        interpolation-decay="200"
+      ></model-viewer>
+    `;
+    // 模型加载完成后移除 spinner
+    const mv = modalMediaBox.querySelector('model-viewer');
+    mv.addEventListener('load', () => {
+      const spinner = modalMediaBox.querySelector('.model-loading-spinner');
+      if (spinner) spinner.remove();
+    });
+  } else {
+    modalMediaBox.className = 'modal-image-placeholder';
+    modalMediaBox.innerHTML = '<span class="modal-image-hint">文物影像</span>';
+  }
+
+  // 文物文本标签
+  if (textArtifacts.length > 0) {
+    populateTags(artifactTags, textArtifacts, 'artifact');
   } else {
     artifactTags.innerHTML = '';
   }
